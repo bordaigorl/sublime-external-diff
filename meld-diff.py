@@ -36,7 +36,7 @@ class MeldDiffQuickPanelCommand(sublime_plugin.WindowCommand):
             MeldWrapper().run([self.window.active_view().file_name(), self.open_files[index]])
 
     def __current_open_files(self):
-        files = [view.file_name() for view in self.window.views()]
+        files = [view.file_name() for view in self.window.views() if view.file_name() is not None ]
 
         # Ignores current file
         files.remove(unicode(self.window.active_view().file_name()))
