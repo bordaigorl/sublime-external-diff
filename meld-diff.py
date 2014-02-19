@@ -1,28 +1,37 @@
 import sublime, sublime_plugin
 import os
 
-MELD_BIN_PATH = '/usr/bin/meld'
 
-class MeldWrapper:
-    def run(self, files):
+class MeldCmd(sublime_plugin.WindowCommand):
+
+    def __init__(self, win):
+        self.window = win
+        self.MELD_BIN_PATH = win.active_view().settings().get("meld_bin_path", '/usr/bin/meld')
+
+    def run_meld(self, files):
         lenFiles = len(files)
         if (lenFiles == 2):
-            os.system('%s "%s" "%s" &' %(MELD_BIN_PATH, files[0], files[1]))
+            os.system('%s "%s" "%s" &' %(self.MELD_BIN_PATH, files[0], files[1]))
         if (lenFiles == 3):
-            os.system('%s "%s" "%s" "%s" &' %(MELD_BIN_PATH, files[0], files[1], files[2]))
+            os.system('%s "%s" "%s" "%s" &' %(self.MELD_BIN_PATH, files[0], files[1], files[2]))
         return
 
-class MeldDiffCommand(sublime_plugin.WindowCommand):
+    def is_enabled(self):
+        return os.path.exists(self.MELD_BIN_PATH)
+
+
+class MeldDiffCommand(MeldCmd):
     def run(self, files):
-        MeldWrapper().run(files)
+        self.run_meld(files)
 
     def is_visible(self, files):
-        if (os.path.exists(MELD_BIN_PATH)):
+        if (os.path.exists(self.MELD_BIN_PATH)):
             lenFiles = len(files)
             return (lenFiles >= 2 and lenFiles <= 3)
         return false
 
-class MeldDiffQuickPanelCommand(sublime_plugin.WindowCommand):
+
+class MeldDiffQuickPanelCommand(MeldCmd):
     def run(self, index=None):
         self.open_files = self.__current_open_files()
 
@@ -33,7 +42,7 @@ class MeldDiffQuickPanelCommand(sublime_plugin.WindowCommand):
 
     def __meld(self, index):
         if index >= 0:
-            MeldWrapper().run([self.window.active_view().file_name(), self.open_files[index]])
+            self.run_meld([self.window.active_view().file_name(), self.open_files[index]])
 
     def __current_open_files(self):
         files = [view.file_name() for view in self.window.views() if view.file_name() is not None ]
@@ -43,7 +52,5 @@ class MeldDiffQuickPanelCommand(sublime_plugin.WindowCommand):
             files.remove(self.window.active_view().file_name())
         else:
             files.remove(unicode(self.window.active_view().file_name()))
-
-
 
         return files
