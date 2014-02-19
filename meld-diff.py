@@ -39,6 +39,11 @@ class MeldDiffQuickPanelCommand(sublime_plugin.WindowCommand):
         files = [view.file_name() for view in self.window.views() if view.file_name() is not None ]
 
         # Ignores current file
-        files.remove(unicode(self.window.active_view().file_name()))
+        if int(sublime.version()) >= 3000:
+            files.remove(self.window.active_view().file_name())
+        else:
+            files.remove(unicode(self.window.active_view().file_name()))
+
+
 
         return files
