@@ -4,20 +4,23 @@ import os
 
 class MeldCmd(sublime_plugin.WindowCommand):
 
-    def __init__(self, win):
-        self.window = win
-        self.MELD_BIN_PATH = win.active_view().settings().get("meld_bin_path", '/usr/bin/meld')
+    def get_meld_path(self):
+        view = self.window.active_view()
+        if view:
+            return view.settings().get("meld_bin_path", '/usr/bin/meld')
+        return '/usr/bin/meld'
 
     def run_meld(self, files):
+        MELD_BIN_PATH = self.get_meld_path()
         lenFiles = len(files)
         if (lenFiles == 2):
-            os.system('%s "%s" "%s" &' %(self.MELD_BIN_PATH, files[0], files[1]))
+            os.system('%s "%s" "%s" &' %(MELD_BIN_PATH, files[0], files[1]))
         if (lenFiles == 3):
-            os.system('%s "%s" "%s" "%s" &' %(self.MELD_BIN_PATH, files[0], files[1], files[2]))
+            os.system('%s "%s" "%s" "%s" &' %(MELD_BIN_PATH, files[0], files[1], files[2]))
         return
 
     def is_enabled(self):
-        return os.path.exists(self.MELD_BIN_PATH)
+        return os.path.exists(self.get_meld_path())
 
 
 class MeldDiffCommand(MeldCmd):
@@ -25,7 +28,7 @@ class MeldDiffCommand(MeldCmd):
         self.run_meld(files)
 
     def is_visible(self, files):
-        if (os.path.exists(self.MELD_BIN_PATH)):
+        if (os.path.exists(self.get_meld_path())):
             lenFiles = len(files)
             return (lenFiles >= 2 and lenFiles <= 3)
         return false
